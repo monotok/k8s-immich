@@ -1,0 +1,12 @@
+[
+    {
+        "op": "replace",
+        "path": "/spec/rules/0/host",
+        "value": "the.real.hostname"
+    },
+    {
+        "op": "replace",
+        "path": "/spec/tls/0/hosts",
+        "value": "the.real.hostname"
+    }
+]

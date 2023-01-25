@@ -1,0 +1,305 @@
+apiVersion: v1
+data:
+  key: 85NiG6C+BqJmkziV1Og+5Nb2QTBLErn/Sf7ntBcHM1LttcfjD7Xjk0aluuYUOsrNemF1RaxLqOIiXMfimX+jTs/M4t5wPxQ4kmMivVZf4kP8N+6v5JXp9e8e6cyi4h+Su1X3DspHKKXDym/Yeijltmz8HBE1r+ZURt8iqTAWPgY=
+kind: Secret
+metadata:
+  name: immich-jwt-key
+  namespace: default
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    application.name: immich-server
+  name: immich-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application.name: immich-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        application.name: immich-server
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - ./start-server.sh
+          env:
+            - name: BASE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: uri
+                  name: example-db-pguser-immich-user
+            - name: DB_URL
+              value: $(BASE_DB_URL)?sslmode=no-verify
+            - name: IMMICH_MACHINE_LEARNING_URL
+              value: http://immich-machine-learning-service.default.svc:3003
+            - name: IMMICH_SERVER_URL
+              value: http://immich-server-service.default.svc:3001
+            - name: IMMICH_WEB_URL
+              value: http://immich-web-service.default.svc:3000
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: key
+                  name: immich-jwt-key
+            - name: NODE_ENV
+              value: production
+            - name: PUBLIC_LOGIN_PAGE_MESSAGE
+            - name: REDIS_HOSTNAME
+              value: immich-redis-master.default.svc
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: redis-password
+                  name: immich-redis
+            - name: REDIS_DBINDEX
+              value: "0"
+            - name: REDIS_PORT
+              value: "6379"
+          image: altran1502/immich-server:latest
+          name: immich-server
+          resources: {}
+          volumeMounts:
+            - mountPath: /usr/src/app/upload
+              name: immich-server-claim0
+      restartPolicy: Always
+      volumes:
+        - name: immich-server-claim0
+          persistentVolumeClaim:
+            claimName: immich-claim0
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    application.name: immich-web
+  name: immich-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application.name: immich-web
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        application.name: immich-web
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - ./entrypoint.sh
+          env:
+            - name: BASE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: uri
+                  name: example-db-pguser-immich-user
+            - name: DB_URL
+              value: $(BASE_DB_URL)?sslmode=no-verify
+            - name: IMMICH_MACHINE_LEARNING_URL
+              value: http://immich-machine-learning-service.default.svc:3003
+            - name: IMMICH_SERVER_URL
+              value: http://immich-server-service.default.svc:3001
+            - name: IMMICH_WEB_URL
+              value: http://immich-web-service.default.svc:3000
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: key
+                  name: immich-jwt-key
+            - name: NODE_ENV
+              value: production
+            - name: PUBLIC_LOGIN_PAGE_MESSAGE
+            - name: REDIS_HOSTNAME
+              value: immich-redis-master.default.svc
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: redis-password
+                  name: immich-redis
+            - name: REDIS_DBINDEX
+              value: "0"
+            - name: REDIS_PORT
+              value: "6379"
+          image: altran1502/immich-web:latest
+          name: immich-web
+          resources: {}
+      restartPolicy: Always
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    application.name: immich-machine-learning
+  name: immich-machine-learning
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application.name: immich-machine-learning
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        application.name: immich-machine-learning
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - ./entrypoint.sh
+          env:
+            - name: BASE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: uri
+                  name: example-db-pguser-immich-user
+            - name: DB_URL
+              value: $(BASE_DB_URL)?sslmode=no-verify
+            - name: IMMICH_MACHINE_LEARNING_URL
+              value: http://immich-machine-learning-service.default.svc:3003
+            - name: IMMICH_SERVER_URL
+              value: http://immich-server-service.default.svc:3001
+            - name: IMMICH_WEB_URL
+              value: http://immich-web-service.default.svc:3000
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: key
+                  name: immich-jwt-key
+            - name: NODE_ENV
+              value: production
+            - name: PUBLIC_LOGIN_PAGE_MESSAGE
+            - name: REDIS_HOSTNAME
+              value: immich-redis-master.default.svc
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: redis-password
+                  name: immich-redis
+            - name: REDIS_DBINDEX
+              value: "0"
+            - name: REDIS_PORT
+              value: "6379"
+          image: altran1502/immich-machine-learning:latest
+          name: immich-machine-learning
+          resources:
+            limits:
+              cpu: "4"
+          volumeMounts:
+            - mountPath: /usr/src/app/upload
+              name: immich-machine-learning-claim0
+      restartPolicy: Always
+      volumes:
+        - name: immich-machine-learning-claim0
+          persistentVolumeClaim:
+            claimName: immich-claim0
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    application.name: immich-microservices
+  name: immich-microservices
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application.name: immich-microservices
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        application.name: immich-microservices
+    spec:
+      containers:
+        - command:
+            - /bin/sh
+            - ./start-microservices.sh
+          env:
+            - name: BASE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: uri
+                  name: example-db-pguser-immich-user
+            - name: DB_URL
+              value: $(BASE_DB_URL)?sslmode=no-verify
+            - name: IMMICH_MACHINE_LEARNING_URL
+              value: http://immich-machine-learning-service.default.svc:3003
+            - name: IMMICH_SERVER_URL
+              value: http://immich-server-service.default.svc:3001
+            - name: IMMICH_WEB_URL
+              value: http://immich-web-service.default.svc:3000
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: key
+                  name: immich-jwt-key
+            - name: NODE_ENV
+              value: production
+            - name: PUBLIC_LOGIN_PAGE_MESSAGE
+            - name: REDIS_HOSTNAME
+              value: immich-redis-master.default.svc
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: redis-password
+                  name: immich-redis
+            - name: REDIS_DBINDEX
+              value: "0"
+            - name: REDIS_PORT
+              value: "6379"
+          image: altran1502/immich-server:latest
+          name: immich-microservices
+          resources: {}
+          volumeMounts:
+            - mountPath: /usr/src/app/upload
+              name: immich-microservices-claim0
+      restartPolicy: Always
+      volumes:
+        - name: immich-microservices-claim0
+          persistentVolumeClaim:
+            claimName: immich-claim0
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    application.name: immich-proxy
+  name: immich-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application.name: immich-proxy
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        application.name: immich-proxy
+    spec:
+      containers:
+        - env:
+            - name: IMMICH_SERVER_URL
+              value: http://immich-server-service.default.svc:3001
+            - name: IMMICH_WEB_URL
+              value: http://immich-web-service.default.svc:3000
+          image: altran1502/immich-proxy:release
+          name: immich-proxy
+          ports:
+            - containerPort: 8080
+          resources: {}
+      restartPolicy: Always
+status: {}

@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patchesStrategicMerge:
+  - example-env.yaml
+
+images:
+- name: altran1502/immich-server
+  newName: altran1502/immich-server
+  newTag: release
+- name: altran1502/immich-web
+  newName: altran1502/immich-web
+  newTag: release
+- name: altran1502/immich-machine-learning
+  newName: altran1502/immich-machine-learning
+  newTag: release
+- name: altran1502/immich-microservices
+  newName: altran1502/immich-microservices
+  newTag: release
+- name: altran1502/immich-proxy
+  newName: altran1502/immich-proxy
+  newTag: release
+
+# Use the command below to generate a key
+# openssl rand -base64 128
+secretGenerator:
+- literals:
+  - key=yourkeygoeshere
+  name: immich-jwt-key
+  type: Opaque
+  behavior: merge
+
+patches:
+- target:
+    kind: Ingress
+    name: immich-ingress
+  path: ingress-patch.json

@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    application.name: immich-proxy-service
+  name: immich-proxy-service
+spec:
+  ports:
+    - name: "2283"
+      port: 2283
+      targetPort: 8080
+  selector:
+    application.name: immich-proxy
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    application.name: immich-server-service
+  name: immich-server-service
+spec:
+  ports:
+    - name: "3001"
+      port: 3001
+      targetPort: 3001
+  selector:
+    application.name: immich-server
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    application.name: immich-machine-learning-service
+  name: immich-machine-learning-service
+spec:
+  ports:
+    - name: "3003"
+      port: 3003
+      targetPort: 3003
+  selector:
+    application.name: immich-machine-learning
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    application.name: immich-web-service
+  name: immich-web-service
+spec:
+  ports:
+    - name: "3000"
+      port: 3000
+      targetPort: 3000
+  selector:
+    application.name: immich-web
+status:
+  loadBalancer: {}

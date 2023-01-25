@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: immich-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: immich-server
+          env:
+            - name: BASE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: uri
+                  name: mydatabaseurl
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: immich-web
+spec:
+  template:
+    spec:
+      containers:
+        - name: immich-web
+          env:
+            - name: BASE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: uri
+                  name: mydatabaseurl
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: immich-machine-learning
+spec:
+  template:
+    spec:
+      containers:
+        - name: immich-machine-learning
+          env:
+            - name: BASE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: uri
+                  name: mydatabaseurl
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: immich-microservices
+spec:
+  template:
+    spec:
+      containers:
+        - name: immich-microservices
+          env:
+            - name: BASE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  key: uri
+                  name: mydatabaseurl
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: immich-claim0
+spec:
+  storageClassName: freenas-iscsi-csi
+  resources:
+    requests:
+      storage: 100G
